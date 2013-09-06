@@ -33,14 +33,20 @@
  * The parameters specified here are those for for which we can't set up
  * reliable defaults, so we need to have the user set them.
  */
-PID::PID(double* input, double* output, double* setpoint,
-        double p, double i, double d, int controllerDirection)
+PID::PID(
+        double* input,
+        double* output,
+        double* setpoint,
+        double p,
+        double i,
+        double d,
+        int controllerDirection
+        )
 {
-
-    myOutput = output;
-    myInput = input;
+    myOutput   = output;
+    myInput    = input;
     mySetpoint = setpoint;
-    inAuto = false;
+    inAuto     = false;
 
     //default output limit corresponds to
     //the arduino pwm limits
@@ -66,32 +72,51 @@ PID::PID(double* input, double* output, double* setpoint,
  */
 bool PID::compute()
 {
-    if(!inAuto) return false;
+    if(!inAuto)
+        return false;
+
     unsigned long now = millis();
     unsigned long timeChange = (now - lastTime);
-    if(timeChange>=sampleTime)
+
+    if(timeChange >= sampleTime)
     {
         // Compute all the working error variables
         double input = *myInput;
         double error = *mySetpoint - input;
         iTerm += (ki * error);
-        if(iTerm > outMax) iTerm = outMax;
-        else if(iTerm < outMin) iTerm = outMin;
+
+        if(iTerm > outMax)
+        {
+            iTerm = outMax;
+        }
+        else if(iTerm < outMin)
+        {
+            iTerm = outMin;
+        }
+
         double dInput = (input - lastInput);
 
         // Compute PID output
         double output = kp * error + iTerm - kd * dInput;
 
-        if(output > outMax) output = outMax;
-        else if(output < outMin) output = outMin;
+        if(output > outMax)
+        {
+            output = outMax;
+        }
+        else if(output < outMin)
+        {
+            output = outMin;
+        }
+
         *myOutput = output;
 
         // Remember some variables for next time
         lastInput = input;
         lastTime = now;
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -106,8 +131,8 @@ void PID::setTunings(double p, double i, double d)
     if (p<0 || i<0 || d<0)
         return;
 
-    dispKp = p; 
-    dispKi = i; 
+    dispKp = p;
+    dispKi = i;
     dispKd = d;
 
     double sampleTimeInSec = ((double)sampleTime)/1000;
@@ -148,7 +173,7 @@ void PID::setSampleTime(int newSampleTime)
  */
 void PID::setOutputLimits(double min, double max)
 {
-    if(min >= max) 
+    if(min >= max)
         return;
 
     outMin = min;
@@ -156,11 +181,23 @@ void PID::setOutputLimits(double min, double max)
 
     if(inAuto)
     {
-        if(*myOutput > outMax) *myOutput = outMax;
-        else if(*myOutput < outMin) *myOutput = outMin;
+        if(*myOutput > outMax)
+        {
+            *myOutput = outMax;
+        }
+        else if(*myOutput < outMin)
+        {
+            *myOutput = outMin;
+        }
 
-        if(iTerm > outMax) iTerm= outMax;
-        else if(iTerm < outMin) iTerm= outMin;
+        if(iTerm > outMax)
+        {
+            iTerm= outMax;
+        }
+        else if(iTerm < outMin)
+        {
+            iTerm= outMin;
+        }
     }
 }
 
@@ -174,7 +211,7 @@ void PID::setMode(int Mode)
     bool newAuto = (Mode == AUTOMATIC);
     if(newAuto == !inAuto)
     {
-        /*we just went from manual to auto*/
+        // we just went from manual to auto
         PID::initialize();
     }
     inAuto = newAuto;
@@ -188,8 +225,15 @@ void PID::initialize()
 {
     iTerm = *myOutput;
     lastInput = *myInput;
-    if(iTerm > outMax) iTerm = outMax;
-    else if(iTerm < outMin) iTerm = outMin;
+
+    if(iTerm > outMax)
+    {
+        iTerm = outMax;
+    }
+    else if(iTerm < outMin)
+    {
+        iTerm = outMin;
+    }
 }
 
 /**
@@ -215,22 +259,25 @@ void PID::setControllerDirection(int direction)
 // purposes.  this are the functions the PID Front-end uses for example
 double PID::getKp()
 {
-    return  dispKp;
+    return dispKp;
 }
+
 double PID::getKi()
 {
-    return  dispKi;
+    return dispKi;
 }
+
 double PID::getKd()
 {
-    return  dispKd;
+    return dispKd;
 }
+
 int PID::getMode()
 {
-    return  inAuto ? AUTOMATIC : MANUAL;
+    return inAuto ? AUTOMATIC : MANUAL;
 }
+
 int PID::getDirection()
 {
     return controllerDirection;
 }
-

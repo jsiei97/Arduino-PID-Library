@@ -9,22 +9,21 @@
 double setpoint, input, output;
 
 //Specify the links and initial tuning parameters
-PID myPID(&input, &output, &setpoint,2,5,1, DIRECT);
+PID myPID(&input, &output, &setpoint, 2, 5, 1, DIRECT);
 
 void setup()
 {
-  //initialize the variables we're linked to
-  input = analogRead(0);
-  setpoint = 100;
+    //initialize the variables we're linked to
+    input = analogRead(0);
+    setpoint = 100;
 
-  //turn the PID on
-  myPID.setMode(AUTOMATIC);
+    //turn the PID on
+    myPID.setMode(AUTOMATIC);
 }
 
 void loop()
 {
-  input = analogRead(0);
-  myPID.compute();
-  analogWrite(3,output);
+    input = analogRead(0);
+    myPID.compute();
+    analogWrite(3,output);
 }
-
