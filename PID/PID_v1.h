@@ -43,7 +43,7 @@ class PID
         /**
          * Sets PID to either Manual (0) or Auto (non-0)
          */
-        void SetMode(int Mode);
+        void setMode(int mode);
 
         /**
          * Performs the PID calculation.
@@ -52,7 +52,7 @@ class PID
          * ON/OFF and calculation frequency can be set using SetMode
          * SetSampleTime respectively
          */
-        bool Compute();
+        bool compute();
 
         /**
          * Clamps the output to a specific range.
@@ -61,7 +61,7 @@ class PID
          * but it's likely the user will want to change this depending on
          * the application
          */
-        void SetOutputLimits(double, double);
+        void setOutputLimits(double, double);
 
 
         /**
@@ -69,7 +69,7 @@ class PID
          * constructor, this function gives the user the option
          * of changing tunings during runtime for Adaptive control
          */
-        void SetTunings(double, double, double);
+        void setTunings(double, double, double);
 
         /**
          * Sets the Direction, or "Action" of the controller.
@@ -77,13 +77,13 @@ class PID
          * REVERSE means the opposite.
          * It's very unlikely that this will be needed once it is set in the constructor.
          */
-        void SetControllerDirection(int);
+        void setControllerDirection(int);
 
         /**
          * Sets the frequency, in Milliseconds, with which
          * the PID calculation is performed.  default is 100
          */
-        void SetSampleTime(int);
+        void setSampleTime(int);
 
 
 
@@ -92,14 +92,14 @@ class PID
         // they were created mainly for the pid front-end,
         // where it's important to know what is actually
         // inside the PID.
-        double GetKp();
-        double GetKi();
-        double GetKd();
-        int GetMode();
-        int GetDirection();
+        double getKp();
+        double getKi();
+        double getKd();
+        int getMode();
+        int getDirection();
 
     private:
-        void Initialize();
+        void initialize();
 
         // we'll hold on to the tuning parameters in user-entered
         // format for display purposes
@@ -122,9 +122,9 @@ class PID
         double *mySetpoint;
 
         unsigned long lastTime;
-        double ITerm, lastInput;
+        double iTerm, lastInput;
 
-        unsigned long SampleTime;
+        unsigned long sampleTime;
         double outMin, outMax;
         bool inAuto;
 };
