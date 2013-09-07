@@ -20,6 +20,9 @@ class TestPID : public QObject
 
         void test_PID_simulator_inc();
         void test_PID_simulator_inc_data();
+
+        void test_PID_simulator_inc_wait();
+        void test_PID_simulator_inc_wait_data();
 };
 
 QString TestPID::formatLog(unsigned long time, double value, double setpoint, double output)
@@ -83,11 +86,11 @@ void TestPID::test_PID_max_min_data()
     QTest::newRow(name.toAscii()) << name << p << i << d;
     */
 
-    for( p=0.0 ; p<=2 ; p+=0.5 )
+    for( p=0.5 ; p<=2 ; p+=0.5 )
     {
-        for( i=1.0 ; i<=10 ; i+=2.0 )
+        for( i=0.1 ; i<=3 ; i+=0.5 )
         {
-            for( d=0 ; d<=5 ; d+=1 )
+            for( d=0 ; d<=0.5 ; d+=0.1 )
             {
                 name = formatName("test_max_min", testCnt++, p,i,d);
                 QTest::newRow(name.toAscii()) << name << p << i << d;
@@ -121,7 +124,6 @@ void TestPID::test_PID_max_min()
     addToFile(fileName, formatLog(my_local_millis, input, setpoint, output));
     //qDebug() << setpoint << input << output;
 
-
     int failcnt = 1000;
     do
     {
@@ -138,7 +140,6 @@ void TestPID::test_PID_max_min()
         QFAIL("Failcnt to high");
     }
 
-
     setpoint = input-10;
 
     failcnt = 1000;
@@ -150,10 +151,13 @@ void TestPID::test_PID_max_min()
         failcnt--;
     } while(output != max && output != min && failcnt != 0);
 
-
-    //qDebug() << setpoint << input << output;
+    if(failcnt == 0)
+    {
+        qDebug() << "FAIL:" << __LINE__ << "data:" << my_local_millis << input << setpoint << output;
+        qDebug() << "FAIL:" << __LINE__ << "pid :" << kp << ki << kd;
+        QFAIL("Failcnt to high");
+    }
 }
-
 
 void TestPID::test_PID_simulator_inc_data()
 {
@@ -176,12 +180,11 @@ void TestPID::test_PID_simulator_inc_data()
     QTest::newRow(name.toAscii()) << name << p << i << d;
     */
 
-    for( p=0.5 ; p<=2 ; p+=0.5 )
+    for( p=0.5 ; p<=3 ; p+=0.5 )
     {
-        for( i=1.0 ; i<=10 ; i+=2.0 )
+        for( i=0.1 ; i<=3.0 ; i+=0.5 )
         {
-            //for( d=0 ; d<=5 ; d+=1 )
-            for( d=0 ; d<=1 ; d+=0.1 )
+            for( d=0 ; d<=0.5 ; d+=0.1 )
             {
                 name = formatName("test_simulator_inc", testCnt++, p,i,d);
                 QTest::newRow(name.toAscii()) << name << p << i << d;
@@ -215,19 +218,26 @@ void TestPID::test_PID_simulator_inc()
     addToFile(fileName, formatLog(my_local_millis, input, setpoint, output));
     //qDebug() << setpoint << input << output;
 
+    int phase = 0;
 
-    int failcnt = 10000;
+    int failcnt = 5000;
     int hitcnt = 0;
     do
     {
         pid.compute();
         addToFile(fileName, formatLog(my_local_millis, input, setpoint, output));
 
+        //Let's simulate that the output affects the value
         if(output>=50.1)
-            input += 0.1;
+            input += (output-50)/10.0;
         else if(output <= 49.9)
-            input -= 0.1;
+            input -= (50-output)/10.0;
 
+        //but it can't go higher than 80 or lower than 20
+        if(input>=80)
+            input = 80;
+        else if(input <= 20)
+            input = 20;
 
         if(input < setpoint+0.5 && input > setpoint-0.5)
             hitcnt++;
@@ -236,15 +246,40 @@ void TestPID::test_PID_simulator_inc()
 
         if(hitcnt > 50)
         {
-            //We have a stable phase 1,
-            //let's change the setpoint and check that we
-            //can get a second stable point...
-            setpoint = 30;
+            hitcnt = 0;
+            switch ( phase )
+            {
+                case 0 :
+                    //let's change the setpoint and check that we
+                    //can get a second stable point...
+                    setpoint = 40;
+                    phase++;
+                    break;
+                case 1 :
+                    //let's disrupt the setpoint
+                    setpoint = 45;
+                    phase++;
+                    break;
+                case 2 :
+                    //let's disrupt the input
+                    input = 35;
+                    phase++;
+                    break;
+                case 3 :
+                    //let's disrupt the input
+                    input = 55;
+                    phase++;
+                    break;
+                default :
+                    phase++;
+                    break;
+            }
         }
+
         my_local_millis += 1000;
         failcnt--;
 
-    } while(hitcnt <= 60 && failcnt != 0);
+    } while(phase <= 4  && failcnt != 0);
 
     if(failcnt == 0)
     {
@@ -256,6 +291,137 @@ void TestPID::test_PID_simulator_inc()
     //qDebug() << setpoint << input << output;
 }
 
+void TestPID::test_PID_simulator_inc_wait_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<double>("kp");
+    QTest::addColumn<double>("ki");
+    QTest::addColumn<double>("kd");
+
+    int testCnt = 1000;
+    QString name;
+    double p,i,d;
+
+    /*
+    p=1;
+    i=2;
+    d=0;
+    name = formatName("test_simulator_inc_wait", testCnt++, p,i,d);
+    QTest::newRow(name.toAscii()) << name << p << i << d;
+    */
+
+    for( p=0.5 ; p<=3 ; p+=0.5 )
+    {
+        for( i=0.1 ; i<=3 ; i+=0.5 )
+        {
+            for( d=0 ; d<=0.5 ; d+=0.1 )
+            {
+                name = formatName("test_simulator_inc", testCnt++, p,i,d);
+                QTest::newRow(name.toAscii()) << name << p << i << d;
+            }
+        }
+    }
+}
+
+void TestPID::test_PID_simulator_inc_wait()
+{
+    QFETCH(QString, fileName);
+    QFETCH(double, kp);
+    QFETCH(double, ki);
+    QFETCH(double, kd);
+
+    my_local_millis = 1000;
+    QCOMPARE((unsigned long)1000, millis());
+
+    double input = 40;
+    double setpoint = 50;
+    double output = 0;
+    PID pid(&input, &output, &setpoint, kp, ki, kd, DIRECT);
+
+    double max = 100.0;
+    double min = 0.0;
+    pid.setOutputLimits(min, max);
+
+    pid.setMode(AUTOMATIC);
+
+    addToFile(fileName, "# NEW SESSION");
+    addToFile(fileName, formatLog(my_local_millis, input, setpoint, output));
+    //qDebug() << setpoint << input << output;
+
+    int phase = 0;
+
+    int failcnt = 5000;
+    int hitcnt = 0;
+    do
+    {
+        pid.compute();
+        addToFile(fileName, formatLog(my_local_millis, input, setpoint, output));
+
+        //Let's simulate that the output affects the value
+
+        if(output<5)
+            input -= 0.1;
+
+        if(output>=5)
+            input += output/10.0;
+
+        //but it can't go higher than 80 or lower than 20
+        if(input>=80)
+            input = 80;
+        else if(input <= 20)
+            input = 20;
+
+        if(input < setpoint+1.0 && input > setpoint-1.0)
+            hitcnt++;
+        else
+            hitcnt=0;
+
+        if(hitcnt > 50)
+        {
+            hitcnt = 0;
+            switch ( phase )
+            {
+                case 0 :
+                    //let's change the setpoint and check that we
+                    //can get a second stable point...
+                    setpoint = 40;
+                    phase++;
+                    break;
+                case 1 :
+                    //let's disrupt the setpoint
+                    setpoint = 45;
+                    phase++;
+                    break;
+                case 2 :
+                    //let's disrupt the input
+                    input = 35;
+                    phase++;
+                    break;
+                case 3 :
+                    //let's disrupt the input
+                    input = 55;
+                    phase++;
+                    break;
+                default :
+                    phase++;
+                    break;
+            }
+        }
+
+        my_local_millis += 1000;
+        failcnt--;
+
+    } while(phase <= 4  && failcnt != 0);
+
+    if(failcnt == 0)
+    {
+        qDebug() << "FAIL:" << __LINE__ << "data:" << my_local_millis << input << setpoint << output;
+        qDebug() << "FAIL:" << __LINE__ << "pid :" << kp << ki << kd;
+        QFAIL("Failcnt to high");
+    }
+
+    //qDebug() << setpoint << input << output;
+}
 
 QTEST_MAIN(TestPID)
 #include "TestPID.moc"
