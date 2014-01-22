@@ -1,0 +1,7 @@
+#tag_view.sh
+cscope.files
+cscope.out
+tags
+
+#misc
+.gdb_history
