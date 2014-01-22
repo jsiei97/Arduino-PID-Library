@@ -36,10 +36,13 @@ class TestBigPWM : public QObject
 
     private slots:
         void test_calc01();
+        void test_calc02();
 };
 
 
-
+/**
+ * Normal operation test
+ */
 void TestBigPWM::test_calc01()
 {
     BigPWM pwm;
@@ -152,10 +155,52 @@ void TestBigPWM::test_calc01()
             QFAIL("FAIL");
         }
     }
-
-
-
 }
+
+
+/**
+ * Test the millis wrapp problem
+ *
+ * On the Arduinio the millis will wrapp once every 50 days
+ * what shall we do then?
+ * Right now there is a controlled reset and we start over, 
+ * so there will be a glich when this happens.
+ */
+void TestBigPWM::test_calc02()
+{
+    BigPWM pwm;
+    pwm.setWindow(20);
+
+    unsigned int out = 50;
+
+    QCOMPARE(pwm.calc(  0, out), false);// T0 - loop1
+    QCOMPARE(pwm.calc(  9, out), false);
+    QCOMPARE(pwm.calc( 10, out),  true);// T1
+    QCOMPARE(pwm.calc( 20, out),  true);// T2
+    QCOMPARE(pwm.calc( 20, out), false);// T0 - loop2
+    QCOMPARE(pwm.calc( 31, out),  true);// T1
+    QCOMPARE(pwm.calc( 35, out),  true);
+
+    QCOMPARE(pwm.t0, 20UL);
+    QCOMPARE(pwm.t1, 30UL);
+    QCOMPARE(pwm.t2, 40UL);
+
+    //Now what happens if the time wrapps?
+    QCOMPARE(pwm.calc( 15, out),  false);
+
+    //The window whould just reset and get the new values.
+    //There will be a jump in operation, but just for this window
+    QCOMPARE(pwm.t0, 15UL);
+    QCOMPARE(pwm.t1, 25UL);
+    QCOMPARE(pwm.t2, 35UL);
+
+    //Now what happens if the time wrapps?
+    QCOMPARE(pwm.calc( 0, out),  false);
+    QCOMPARE(pwm.t0,  0UL);
+    QCOMPARE(pwm.t1, 10UL);
+    QCOMPARE(pwm.t2, 20UL);
+}
+
 
 
 QTEST_MAIN(TestBigPWM)

@@ -58,7 +58,6 @@ bool BigPWM::calc(unsigned long time, unsigned long out)
         reset();
     }
 
-
     switch ( state )
     {
         default:
