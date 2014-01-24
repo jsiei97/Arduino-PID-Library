@@ -34,7 +34,13 @@ typedef enum
 } PWMStates;
 
 
-
+/**
+ * A big window pwm class
+ *
+ * The pwm starts with low and ends in high.
+ * But with 0% it is low all the time, and with 100% it is high all the time.
+ * @dotfile state_BigPWM.gv The BigPWM state machine
+ */
 class BigPWM
 {
     private:
@@ -48,12 +54,8 @@ class BigPWM
         BigPWM();
 
         void reset();
-
         bool calc(unsigned long time, unsigned long out);
-
         void setWindow(unsigned long windowSize);
-
-
 };
 
 #endif  // __BIGPWM_H
