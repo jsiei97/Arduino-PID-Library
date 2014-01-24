@@ -52,8 +52,8 @@ PID::PID(
     //the arduino pwm limits
     PID::setOutputLimits(0, 255);
 
-    //default controller sample Time is 0.1 seconds
-    sampleTime = 100;
+    //default controller sample Time is 1 seconds
+    sampleTime = 1000;
 
     PID::setControllerDirection(controllerDirection);
     PID::setTunings(p, i, d);
