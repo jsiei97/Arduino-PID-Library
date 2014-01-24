@@ -1,0 +1,22 @@
+digraph finite_state_machine {
+    rankdir=LR;
+    size="8,5"
+ 
+    node [shape = circle, label="PWM_T0"  ] T0;
+    node [shape = circle, label="PWM_T1"  ] T1;
+    node [shape = circle, label="PWM_MIN" ] MIN;
+    node [shape = circle, label="PWM_MAX" ] MAX;
+ 
+    node [shape = point ]; qi
+    qi -> T0;
+ 
+    T0 -> MIN [ label = "out=0" ];
+    T0 -> T1  [ label = "out<100" ];
+    T0 -> MAX [ label = "out=100" ];
+
+    MIN -> T0 [ label = "time>T2" ];
+    MAX -> T0 [ label = "time>T2" ];
+
+    T1 -> MAX [ label = "time>T1" ];
+
+}
