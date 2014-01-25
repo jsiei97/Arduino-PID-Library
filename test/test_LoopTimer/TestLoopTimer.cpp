@@ -41,55 +41,57 @@ class TestLoopTimer : public QObject
 
 void TestLoopTimer::test_correctedTime()
 {
-    LoopTimer loopTime(1000);
+    unsigned long targetTime = 1000;
+    LoopTimer loopTime(targetTime);
 
+    unsigned long t1 =  0;
+    unsigned long t2 = 10;
 
-    unsigned long t1 = 0;
-    QCOMPARE( loopTime.correctedTime(t1), 1000UL);
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2-t1) );
 
-    // 1000 - 500 = 500
-    t1+=500;
-    QCOMPARE( loopTime.correctedTime(t1),  500UL);
+    t1 = t2;
+    t2 += 100; //100ms work, ok
 
-    t1+=500;
-    QCOMPARE( loopTime.correctedTime(t1),  500UL);
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2-t1) );
 
-    // 1000 - 700 = 300
-    t1+=700;
-    QCOMPARE( loopTime.correctedTime(t1),  300UL);
+    t1 = t2;
+    t2 += targetTime+100; //100ms work over the limit!
 
-    // More than sleep time target, aka just go again!
-    t1+=1100;
-    QCOMPARE( loopTime.correctedTime(t1),    0UL);
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), 0UL );
 
-    t1+=100;
-    QCOMPARE( loopTime.correctedTime(t1),  900UL);
+    t1 = t2;
+    t2 += targetTime+500; //500ms work over the limit!
 
-    // Test overflow and new time at 200!
-    // We ignore that part up to the overflow,
-    // but remove the part after overflow.
-    // (maybe care later...)
-    // 1000 - 200 = 800
-    t1 =200;
-    QCOMPARE( loopTime.correctedTime(t1),  800UL);
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), 0UL );
 
-    // But if we start at 0,
-    // 1000 - 0 = 1000
-    t1 =0;
-    QCOMPARE( loopTime.correctedTime(t1),  1000UL);
+    t1 = t2;
+    t2 += 200; //200ms work, ok
 
-    // More than sleep time target, aka just go again!
-    t1+=1100;
-    QCOMPARE( loopTime.correctedTime(t1),    0UL);
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2-t1) );
 
-    // 1000 - 700 = 300
-    t1+=700;
-    QCOMPARE( loopTime.correctedTime(t1),  300UL);
+    t1 = t2;
+    t2 = 200; //WARNING wrapp
+
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2) );
+
+    t1 = t2;
+    t2 = 100; //WARNING wrapp
+
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2) );
+
+    t1 = t2;
+    t2 += 200; //200ms work, ok
+
+    loopTime.mark(t1);
+    QCOMPARE( loopTime.correctedTime(t2), targetTime-(t2-t1) );
 }
-
-
-
-
 
 QTEST_MAIN(TestLoopTimer)
 #include "TestLoopTimer.moc"

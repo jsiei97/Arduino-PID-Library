@@ -32,6 +32,7 @@ class LoopTimer
     public:
         LoopTimer(unsigned long sleepTime);
 
+        void mark(unsigned long time);
         unsigned long correctedTime(unsigned long time);
 };
 

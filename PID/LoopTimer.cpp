@@ -30,6 +30,11 @@ LoopTimer::LoopTimer(unsigned long sleepTime)
     timeLast = 0;
 }
 
+void LoopTimer::mark(unsigned long time)
+{
+    timeLast = time;
+}
+
 unsigned long LoopTimer::correctedTime(unsigned long time)
 {
     unsigned long res = 0;
@@ -38,7 +43,7 @@ unsigned long LoopTimer::correctedTime(unsigned long time)
         res = time - timeLast;
         if(res <= sleepTime)
         {
-            res = sleepTime-res ;
+            res = sleepTime-res;
         }
         else
         {
@@ -55,6 +60,5 @@ unsigned long LoopTimer::correctedTime(unsigned long time)
         }
     }
 
-    timeLast = time;
     return res;
 }

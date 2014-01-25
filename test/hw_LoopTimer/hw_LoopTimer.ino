@@ -3,23 +3,41 @@
 // Pin 13 has an LED connected on most Arduino boards.
 int led = 13;
 
-LoopTimer loopTimer(500UL); //0.5s
+unsigned long diff = 0;
+unsigned long timeNew = 0;
+unsigned long timeOld = 0;
+#define SLEEP_TIME 1000UL
+
+LoopTimer loopTimer(SLEEP_TIME);
 bool blink = false;
 int err=0;
 
 void setup()
 {
+    Serial.begin(9600);    
     pinMode(led, OUTPUT);
 }
 
 void loop()
 {
-    //Even if there was a lot of "work"
-    //we leave this point after Xs since last time we where here,
-    //In this case every 0.5s so we should have a steady blink.
-    delay(loopTimer.correctedTime(millis()));
+    loopTimer.mark(millis());
 
-    // This should
+    timeNew = millis();
+    diff = timeNew-timeOld;
+    timeOld = timeNew;
+
+    Serial.print("Time: ");
+    Serial.print(diff);
+    Serial.print(" - ");
+    Serial.println(timeNew);
+
+    if( diff < (SLEEP_TIME)-5 || diff > (SLEEP_TIME)+5)
+    {
+        Serial.print("Err : ");
+        Serial.println(diff);
+    }
+
+    // Blink at a steady rate
     if(blink)
     {
         blink = false;
@@ -42,4 +60,6 @@ void loop()
         err=0;
     }
     delay(err);
+
+    delay(loopTimer.correctedTime(millis()));
 }
