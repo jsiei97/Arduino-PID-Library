@@ -119,25 +119,25 @@ void TestBigPWM::test_calc01()
     //Test 25% PWM
     pwm.reset();
     out = 25;
-    for(unsigned long i=0; i<5; i++)
+    for(unsigned long i=0; i<15; i++)
     {
-        //25% start low
+        //100%-25%=75% low time
         if(pwm.calc(i, out) != false)
         {
             qDebug() << "Fail at loop:" << i;
             QFAIL("FAIL");
         }
     }
-    for(unsigned long i=5; i<20; i++)
+    for(unsigned long i=15; i<20; i++)
     {
-        //then go high
+        //then go high the rest (25%)
         if(pwm.calc(i, out) != true)
         {
             qDebug() << "Fail at loop:" << i;
             QFAIL("FAIL");
         }
     }
-    for(unsigned long i=20; i<25; i++)
+    for(unsigned long i=20; i<35; i++)
     {
         //then go low
         if(pwm.calc(i, out) != false)
@@ -146,7 +146,7 @@ void TestBigPWM::test_calc01()
             QFAIL("FAIL");
         }
     }
-    for(unsigned long i=25; i<40; i++)
+    for(unsigned long i=35; i<40; i++)
     {
         //then go high
         if(pwm.calc(i, out) != true)
