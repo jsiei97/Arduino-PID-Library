@@ -80,7 +80,9 @@ bool BigPWM::calc(unsigned long time, unsigned long out)
                 else
                 {
                     state=PWM_T1;
-                    t1=time+((windowSize*out)/100);
+                    //With 20% on, start with 80% off
+                    //With 80% on, start with 20% off
+                    t1=time+((windowSize*(100-out))/100);
                     return false;
                 }
             }

@@ -46,7 +46,7 @@ void setup()
 
     pinMode(pinRelay, OUTPUT);
     pwm.setWindow(5*1000); //5s
-    setpoint = 40;
+    setpoint = 35;
 
     myPID.setOutputLimits(0, 100);//0..100%
     myPID.setMode(AUTOMATIC);
@@ -62,11 +62,11 @@ void loop()
 
         if(pwm.calc(millis(), (unsigned long)output))
         {
-            digitalWrite(pinRelay, LOW);
+            digitalWrite(pinRelay, HIGH);
         }
         else
         {
-            digitalWrite(pinRelay, HIGH);
+            digitalWrite(pinRelay, LOW);
         }
 
         Serial.print((unsigned int)(millis()/1000));
