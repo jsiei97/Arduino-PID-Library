@@ -32,6 +32,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#define DEBUG
+
 const int ledPin =  13;   // the number of the LED pin
 int ledState = LOW;       // ledState used to set the LED
 long previousMillis = 0;  // will store last time LED was updated
@@ -44,6 +46,11 @@ int val = 0;
 
 void setup()
 {
+#ifdef DEBUG
+    Serial.begin(9600);
+    Serial.println("Begin");
+#endif
+
     pinMode(out1, OUTPUT);
     pinMode(out2, OUTPUT);
 
@@ -57,20 +64,32 @@ void loop()
     // analogRead values go from 0 to 1023 (0..0x3FF)
     // analogWrite values from 0 to 255    (0..0x0FF)
     val = analogRead(analogPin);
+#ifdef DEBUG
+    Serial.print("Read: ");
+    Serial.println(val);
+#endif
 
     //Now 0..0x1FF)
     val = val/2;
 
-    //High or low? 
+    //High or low?
     if(val < 0x100)
     {
         analogWrite(out1, (val & 0xFF));
         analogWrite(out2, 0);
+#ifdef DEBUG
+        Serial.print("Low : ");
+        Serial.println((val & 0xFF));
+#endif
     }
     else
     {
         analogWrite(out1, 0xFF);
         analogWrite(out2, (val & 0xFF));
+#ifdef DEBUG
+        Serial.print("High: ");
+        Serial.println((val & 0xFF));
+#endif
     }
 
     //Blink onboard LED so we know it is alive...
