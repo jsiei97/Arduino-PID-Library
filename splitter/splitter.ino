@@ -34,14 +34,14 @@
 
 //#define DEBUG
 
-const int ledPin =  13;   // the number of the LED pin
+const int ledPin = 9;     // the number of the LED pin
 int ledState = LOW;       // ledState used to set the LED
 long previousMillis = 0;  // will store last time LED was updated
 long interval = 1000;     // interval at which to blink (milliseconds)
 
 int out1 = 5;
 int out2 = 6;
-int analogPin = 0;
+int analogPin = A0;
 int val = 0;
 
 void setup()
@@ -55,6 +55,8 @@ void setup()
     pinMode(out2, OUTPUT);
 
     pinMode(ledPin, OUTPUT);
+
+    analogReference(DEFAULT); //5V ref
 }
 
 void loop()
@@ -109,4 +111,7 @@ void loop()
 
         digitalWrite(ledPin, ledState);
     }
+#ifdef DEBUG
+    delay(500);
+#endif
 }
